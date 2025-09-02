@@ -1,0 +1,101 @@
+---
+title: "synDNA_generation"
+format: html
+---
+
+```{r}
+### Libraries
+library(Biostrings)
+```
+
+
+```{r}
+# Function to insert sub-strings at specified positions
+insert_substring <- function(base_seq, substring, position) {
+  prefix <- substring(base_seq, 1, position - 1)
+  suffix <- substring(base_seq, position, nchar(base_seq))
+  modified_seq <- paste0(prefix, substring, suffix)
+  return(modified_seq)
+}
+
+# Function to check if "GAATTC", "GCTAGC" and "CCTAGG" is present in the sequence
+contains_restriction_site <- function(sequence) {
+  return(grepl("GAATTC", sequence) | grepl("GCTAGC", sequence) | grepl("CCTAGG", sequence))
+}
+
+# Function to generate sequences with specified GC content 
+generateSeqs <- function(size, gc, number) {
+  probGC = c((1 - gc) / 2, (1 - gc) / 2, gc / 2, gc / 2) # Proportion of each nucleotide
+  names_file_seq <- paste0("seq_", "gc-", gc, "_n=", number) # Naming the output file
+  
+  for (i in 1:number) { # Repeat as many times as the user set up
+    repeat {
+      seq_nt <- sample(c("A", "T", "C", "G"), size, replace = TRUE, prob = probGC)
+      base_seq <- paste(seq_nt, collapse = "")
+      
+      # Check if "GAATTC" is present in the base sequence
+      if (!contains_restriction_site(base_seq)) {
+        break
+      }
+    }
+    
+    # Define insert sequences and their positions
+    inserts <- list(
+      list(seq = "AAATTGAAGAGTTTGATCATGGCTCAGATTGAACGCTGGCGGCAGGCCTAACACATGCAAGTCGAACGGT", pos = 1),
+      list(seq = "ACTGAGACACGGTCCAGACTCCTACGGGAGGCAGCAGTGGGGAATATTGCACAATGGGCGCAAGCCTGAT", pos = 321),
+      list(seq = "CACCGGCTAACTCCGTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTAATCGGAATTACTGGGCGTAAAGCGCACGCAGGCGGTT", pos = 501),
+      list(seq = "GTGGGGAGCAAACAGGATTAGATACCCTGGTAGTCCACGCCGTAAACGAT", pos = 771),
+      list(seq = "CCGCAAGGTTAAAACTCAAATGAATTGACGGGGGCCGCACAAGCGGTGGAGCATGTGGTTTAATTCGATGCAACGCGAAGAACCTTACCTGGTCT", pos = 896),
+      list(seq = "AGACAGGTGCTGCATGGCTGTCGTCAGCTCGTGTTGTGAAATGTTGGGTTAAGTCCCGCAACGAGCGCAACCCTTATCCT", pos = 1041),
+      list(seq = "TGAATACGTTCCCGGGCCTTGTACACACCGCCCGTCACAC", pos = 1371),
+      list(seq = "GGGTGAAGTCGTAACAAGGTAACCGTAGGGGAACCTGCGG", pos = 1486)
+    )
+    
+    # Ensure no insert sequences contain  "GAATTC", "GCTAGC" and "CCTAGG" 
+    inserts <- lapply(inserts, function(insert) {
+      if (contains_restriction_site(insert$seq)) {
+        stop(paste("Insert sequence contains restriction site:", insert$seq))
+      }
+      return(insert)
+    })
+    
+    # Insert each sequence at the correct position
+    for (insert in inserts) {
+      base_seq <- insert_substring(base_seq, insert$seq, insert$pos)
+      
+      # Adjust positions for subsequent insertions
+      for (j in seq_along(inserts)) {
+        if (inserts[[j]]$pos > insert$pos) {
+          inserts[[j]]$pos <- inserts[[j]]$pos + nchar(insert$seq)
+        }
+      }
+    }
+    
+    # Final check to ensure  "GAATTC", "GCTAGC" and "CCTAGG" is not in the resulting sequence
+    if (contains_restriction_site(base_seq)) {
+      stop("Resulting sequence contains restriction site after insertions.")
+    }
+
+    # Append "GAATTC" to the end of the base sequence  
+    base_seq <- paste0(base_seq, "GAATTC")
+    base_seq <- paste0("GAATTC", base_seq)
+  
+    ds_seq_nt <- DNAString(base_seq)
+    ds_seq_nt_set <- DNAStringSet(ds_seq_nt)
+    names(ds_seq_nt_set) <- paste0("synDNA_16SrRNA_seq_", i, "_gc=", gc) # Naming each individual sequence
+    writeXStringSet(ds_seq_nt_set, paste0(names_file_seq, ".fasta"), format = 'fasta', append = TRUE)
+  }
+}
+```
+
+
+```{r}
+## One single file with all the random sequences per GC% will be generate.
+## The sequences can be used for downstream steps, like sequence similarity analysis. 
+
+generateSeqs(size=2000, gc=0.26, number=2)
+generateSeqs(size=2000, gc=0.36, number=2)
+generateSeqs(size=2000, gc=0.46, number=2)
+generateSeqs(size=2000, gc=0.56, number=2)
+generateSeqs(size=2000, gc=0.66, number=2)
+```
