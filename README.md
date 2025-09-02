@@ -11,4 +11,5 @@ Generates synthetic DNA sequences:
 ## Libraries loaded:
 Biostrings (used to build/write sequences)
 
+-------------------------------------------------------------------------------------------------------------------------------------------------------
 *Output is append-mode: rerunning with the same parameters will keep adding sequences to the same FASTA unless you delete/rename it first.*
