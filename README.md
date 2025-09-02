@@ -5,7 +5,7 @@ Generates synthetic DNA sequences of:
 - ensures no internal restriction sites (EcoRI GAATTC, NheI GCTAGC, AvrII CCTAGG) exist inside the body of the sequence, 
 - flanks EcoRI sites, and writes everything to a FASTA file
 
-##Libraries loaded: 
+## Libraries loaded:
 Biostrings (used to build/write sequences)
 
-**Output is append-mode: rerunning with the same parameters will keep adding sequences to the same FASTA unless you delete/rename it first.**
+### Output is append-mode: rerunning with the same parameters will keep adding sequences to the same FASTA unless you delete/rename it first.
