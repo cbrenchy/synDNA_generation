@@ -1,5 +1,5 @@
 # synDNA_generation
-Generates synthetic DNA sequences:
+*synDNA_generation_V1-V9_EcoRI.qmd* generates synthetic DNA sequences:
 - of a specified length and GC content, 
 - defines 8 insert fragments (hard-coded strings that look like 16S segments) with intended insertion positions relative to the original base,
 - ensures no internal restriction sites (EcoRI GAATTC, NheI GCTAGC, AvrII CCTAGG) exist inside the body of the sequence, 
